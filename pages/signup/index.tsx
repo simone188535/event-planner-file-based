@@ -1,4 +1,4 @@
-import { useForm, useController, Control } from "react-hook-form";
+import { useForm, useController, Control, UseFormProps, UseControllerProps, FieldValues } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup"
 
@@ -22,13 +22,18 @@ const schema = yup
     })
     .required()
 
-type IFormTextInput = {
-    name: string;
-    control: Control<any>;
-} & TextFieldProps;
+type FormTextInputTypes<T extends FieldValues> = {
+    // name: string;
+    // control: Control<FormValues>;
+} & TextFieldProps & UseControllerProps<T>;
+
+// interface IFormTextInput extends TextFieldProps {
+//     name: string;
+//     control: Control<any>;  
+// }
 
 
-function FormTextInput({ name, control, ...props }: IFormTextInput) {
+function FormTextInput<T extends FieldValues>({ name, control, ...props }: FormTextInputTypes<T>) {
     const {
         field
     } = useController({
@@ -36,11 +41,20 @@ function FormTextInput({ name, control, ...props }: IFormTextInput) {
         control,
     });
 
-    return <TextField id="outlined-basic" label={name} {...field} {...props} />
+    // return <TextField label={name} {...field} {...props} />
+    return <TextField {...field} {...props} />
 
 }
 export default function Signup() {
-    const { handleSubmit, control } = useForm<FormValues>({resolver: yupResolver(schema)});
+    const { handleSubmit, control } = useForm<FormValues>({
+        resolver: yupResolver(schema),
+        defaultValues: {
+            username: '',
+            email: '',
+            password: '',
+            passwordConfirm: ''
+        }
+    });
 
 
     const onSubmit = (data: FormValues) => console.log(data);
@@ -53,10 +67,10 @@ export default function Signup() {
                 handleSubmit(onSubmit)
             }
         >
-            <FormTextInput name="Username" control={control}  variant='outlined' sx={{}}/>
-            <FormTextInput name="Email" control={control}  variant='outlined' />
-            <FormTextInput name="Password" control={control}  variant='outlined' />
-            <FormTextInput name="Confirm Password" control={control}  variant='outlined' />
+            <FormTextInput name="username" label='Username' rules={{ required: true }}  control={control}  variant='outlined' sx={{}} disabled />
+            <FormTextInput name="email" label="Email" control={control}  variant='outlined' />
+            <FormTextInput name="password" label="Password" control={control}  variant='outlined' />
+            <FormTextInput name="passwordConfirm" label="Confirm Password" control={control}  variant='outlined' />
             <Button variant="contained" type="submit">Submit</Button>
         </Box>
     </Container>)
