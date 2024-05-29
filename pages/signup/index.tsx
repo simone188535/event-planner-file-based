@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   useForm,
   useController,
@@ -18,8 +19,13 @@ import {
   Typography,
 } from "@mui/material";
 
-import  {signupFormContainer } from "@/pages/signup/styles";
-import { formPageContainer, formPrimaryHead, formTextInput, formSubmit } from '@/styles/form/styles';
+import { signupFormContainer } from "@/pages/signup/styles";
+import {
+  formPageContainer,
+  formPrimaryHead,
+  formTextInput,
+  formSubmit,
+} from "@/styles/form/styles";
 
 type FormValues = {
   username: string;
@@ -48,6 +54,17 @@ type FormTextInputTypes<T extends FieldValues> = {
 //     control: Control<any>;
 // }
 
+interface IApiStatus {
+  isLoading: boolean;
+  success: string;
+  err: string;
+}
+
+const getErrorMessage = (error: unknown) => {
+  if (error instanceof Error) return error.message;
+  return String(error);
+};
+
 function FormTextInput<T extends FieldValues>({
   name,
   control,
@@ -62,6 +79,11 @@ function FormTextInput<T extends FieldValues>({
   return <TextField {...field} {...props} />;
 }
 export default function Signup() {
+  const [status, setStatus] = useState<IApiStatus>({
+    isLoading: false,
+    success: "",
+    err: "",
+  });
   const { handleSubmit, control } = useForm<FormValues>({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -72,11 +94,41 @@ export default function Signup() {
     },
   });
 
-  const onSubmit = (data: FormValues) => console.log(data);
+  const onSubmit = async (data: FormValues) => {
+    setStatus((prevState) => ({ ...prevState, isLoading: true }));
+    try {
+      const response = await fetch("/api/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      await response.json();
+      setStatus((prevState) => ({
+        isLoading: prevState.isLoading,
+        success: "User created!",
+        err: "",
+      }));
+    } catch (err) {
+      setStatus((prevState) => ({
+        // ...prevState,
+        isLoading: prevState.isLoading,
+        success: "",
+        err: getErrorMessage("Something went wrong! Please try again later."),
+      }));
+    }
+    setStatus((prevState) => ({ ...prevState, isLoading: false }));
+
+    console.log(data);
+  };
 
   return (
     <Container component="main" sx={formPageContainer}>
-      <Typography component="h1" sx={formPrimaryHead}>Signup Page</Typography>
+      <Typography component="h1" sx={formPrimaryHead}>
+        Signup Page
+      </Typography>
       <Box
         component="form"
         onSubmit={handleSubmit(onSubmit)}
@@ -114,6 +166,15 @@ export default function Signup() {
           Submit
         </Button>
       </Box>
+      {status?.isLoading ? (
+        <Typography>Loading...</Typography>
+      ) : status?.err ? (
+        <Typography>{status.err}</Typography>
+      ) : status?.success ? (
+        <Typography>{status.success}</Typography>
+      ) : (
+        <></>
+      )}
     </Container>
   );
 }
