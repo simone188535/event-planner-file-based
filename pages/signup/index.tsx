@@ -70,13 +70,23 @@ function FormTextInput<T extends FieldValues>({
   control,
   ...props
 }: FormTextInputTypes<T>) {
-  const { field } = useController({
+  const {
+    field,
+    fieldState: { error },
+  } = useController({
     name,
     control,
   });
 
   // return <TextField label={name} {...field} {...props} />
-  return <TextField {...field} {...props} />;
+  return (
+    <TextField
+      {...field}
+      error={!!error}
+      helperText={<>{error?.message}</>}
+      {...props}
+    />
+  );
 }
 export default function Signup() {
   const [status, setStatus] = useState<IApiStatus>({
@@ -95,6 +105,7 @@ export default function Signup() {
   });
 
   const onSubmit = async (data: FormValues) => {
+    console.log(data);
     setStatus((prevState) => ({ ...prevState, isLoading: true }));
     try {
       const response = await fetch("/api/signup", {
@@ -120,8 +131,6 @@ export default function Signup() {
       }));
     }
     setStatus((prevState) => ({ ...prevState, isLoading: false }));
-
-    console.log(data);
   };
 
   return (
