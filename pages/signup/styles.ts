@@ -4,9 +4,5 @@
     // add more later
 }
 
-const formPageContainer = {
-    mt: '50px'
-}
 
-
-export { signupFormContainer, formPageContainer };
+export default signupFormContainer;
