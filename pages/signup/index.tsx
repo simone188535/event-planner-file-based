@@ -19,7 +19,7 @@ import {
   Typography,
 } from "@mui/material";
 
-import signupFormContainer from "@/pages/signup/styles";
+import { signupFormContainer } from "@/styles/signup/styles";
 import {
   formPageContainer,
   formPrimaryHead,
